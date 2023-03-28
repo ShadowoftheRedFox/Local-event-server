@@ -1,0 +1,13 @@
+{
+  "main": "./src/index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "piesocket-js": "^4.0.1"
+  },
+  "scripts": {
+    "http": "node .",
+    "websocket": "node src/websocket.js",
+    "devhttp": "nodemon npm run http",
+    "devsocket": "nodemon npm run websocket"
+  }
+}
