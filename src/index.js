@@ -1,54 +1,53 @@
 // setting up constants
-var express = require('express');
-var http = require('http');
+const express = require('express');
+const http = require('http');
 const app = express();
+const { WebSocketServer } = require('ws')
+const sockserver = new WebSocketServer({ port: 443, host: "192.168.1.36" })
+
+// start the websocket server
+sockserver.on('connection', ws => {
+    console.log('New client connected!')
+    ws.send('connection established')
+    ws.on('close', () => console.log('Client has disconnected!'))
+    ws.on('message', data => {
+        sockserver.clients.forEach(client => {
+            console.log(`distributing message: ${data}`)
+            client.send(`${data}`)
+        })
+    })
+    ws.onerror = function () {
+        console.log('websocket error')
+    }
+})
+
+// start the http server
 /**
  * @type {http.Server}
  */
 const serv = http.Server(app);
 
 // login token
-const token = "abcd";
+const token = "";
+const port = process.env.port || 80;
+const hostname = "192.168.1.36";
 
 // handle responses
-// handle raw request
 app.get('/', function (req, res) {
-    if (req.query.token != token) {
-        return res.status(404);
-    }
-    try {
-        console.log(req.query);
-        const jsonData = JSON.parse(req.query.json);
-        if (jsonData.param) {
-            const result = { res: parseInt(jsonData.param[0]) + parseInt(jsonData.param[1]) }
-            return res.send(JSON.stringify(result));
-        }
-        console.log(jsonData);
-        res.send(JSON.stringify(jsonData));
-    } catch (e) {
-        console.log(e);
-        res.status(500).send("<p>Something went wrong, oops.</p>");
-    }
+    res.sendFile(__dirname + `/client.html?host:${encodeURI(host)}`);
 });
 
-app.get('/json/', function (req, res) {
-    if (req.query.token != token) {
-        return res.status(404);
-    }
-    res.sendFile(__dirname + "/client/t.json");
+app.get('/ip/', function (req, res) {
+    res.end("Your IP Addresss is: " + req.socket.localAddress);
 });
 
-app.get('/chat/', function (req, res) {
-    res.sendFile(__dirname + "/piesocket.html");
-});
 
-// start client
+// make the base return directory in client folder
 app.use('client', express.static(__dirname + '/client'))
 app.use(express.static(__dirname + '/client'));
 
 // will run on client IP and port 2000
-serv.listen(2000, () => {
+serv.listen(port, hostname, () => {
     console.clear();
-    console.log(`Running on host IP on port 2000.\n`)
-    console.log(serv.address());
+    console.log(`Running on host ${hostname} on port ${port}`);
 });
