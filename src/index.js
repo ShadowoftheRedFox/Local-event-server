@@ -34,7 +34,7 @@ const hostname = "192.168.1.36";
 
 // handle responses
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + `/client.html?host:${encodeURI(host)}`);
+    res.sendFile(__dirname + `/client/client.html`);
 });
 
 app.get('/ip/', function (req, res) {
